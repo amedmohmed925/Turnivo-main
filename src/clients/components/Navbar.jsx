@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path ? 'active' : '';
   };
 
   return (
@@ -61,13 +66,13 @@ const Navbar = () => {
             {/* Navigation items on the left */}
             <ul className="navbar-nav me-auto">
               <li className="nav-item">
-                <Link className="nav-link active" to="/services">Services</Link>
+                <Link className={`nav-link ${isActive('/services')}`} to="/services">Services</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/how-we-work">How we work</Link>
+                <Link className={`nav-link ${isActive('/how-we-work')}`} to="/how-we-work">How we work</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/contact">Contact us</Link>
+                <Link className={`nav-link ${isActive('/contact')}`} to="/contact">Contact us</Link>
               </li>
             </ul>
 

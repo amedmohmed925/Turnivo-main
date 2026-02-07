@@ -77,6 +77,10 @@
   import CleanerSmartLockCheckinCheckout from './cleaner/pages/CleanerSmartLockCheckinCheckout'
   import Home from './shared/pages/Home'
   import DashboardMaintenanceOrders from './clients/pages/DashboardMaintenanceOrders'
+  import Services from './shared/pages/Services'
+  import Contact from './shared/pages/Contact'
+  import LegalPrivacy from './shared/pages/LegalPrivacy'
+  import TermsAndConditions from './shared/pages/TermsAndConditions'
 
   import DashboardPropertyProblemDetails from './clients/pages/DashboardPropertyProblemDetails'
   import ScanHandler from './shared/pages/ScanHandler'
@@ -91,6 +95,10 @@
         <Route path="/join-confirm-page" element={<JoinConfirmPage />} />
         <Route path="/confirm-provider-steps" element={<ConfirmProviderSteps />} />
         <Route path="/provider-thanks" element={<ProviderThanks />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<LegalPrivacy />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
 
         {/* client - Role ID: 3 */}
         <Route path="client/dashboard" element={<ProtectedRoute allowedRoles={[ROLES.CLIENT]}><DashboardHome /></ProtectedRoute>} />
