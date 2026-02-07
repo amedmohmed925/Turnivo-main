@@ -1,7 +1,7 @@
 /* ==================== FONT FACES ==================== */
 @font-face {
   font-family: 'DIN Next LT Arabic';
-  src: url('./assets/fonts/DINNextLTArabic-Light.ttf') format('truetype');
+  src: url('/assets/fonts/ArbFONTS-DINNEXTLTARABIC-LIGHT-1.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -9,7 +9,7 @@
 
 @font-face {
   font-family: 'DIN Next LT Arabic';
-  src: url('./assets/fonts/DINNextLTArabic-Regular.ttf') format('truetype');
+  src: url('/assets/fonts/ArbFONTS-DINNextLTArabic-Regular-2.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -17,7 +17,7 @@
 
 @font-face {
   font-family: 'DIN Next LT Arabic';
-  src: url('./assets/fonts/DINNextLTArabic-Medium.ttf') format('truetype');
+  src: url('/assets/fonts/ArbFONTS-DINNextLTArabic-Medium-2.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -25,7 +25,7 @@
 
 @font-face {
   font-family: 'DIN Next LT Arabic';
-  src: url('./assets/fonts/DINNextLTArabic-Bold.ttf') format('truetype');
+  src: url('/assets/fonts/ArbFONTS-DINNextLTArabic-Bold-2.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -33,7 +33,7 @@
 
 @font-face {
   font-family: 'DIN Next LT Arabic';
-  src: url('./assets/fonts/DINNextLTArabic-Black.ttf') format('truetype');
+  src: url('/assets/fonts/ArbFONTS-DINNextLTArabic-Black-2.ttf') format('truetype');
   font-weight: 900;
   font-style: normal;
   font-display: swap;

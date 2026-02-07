@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2';
 import { joinTeam } from '../../api/cleanerApi';
+import { useServices } from '../../hooks/useSite';
 
 const ConfirmProviderStepsMain = ({ onMobileMenuClick }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -16,6 +17,21 @@ const ConfirmProviderStepsMain = ({ onMobileMenuClick }) => {
   // Add state to track current step
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+  
+  // Fetch cities using the existing useServices hook (which uses the /lists endpoint)
+  const { data: listData } = useServices();
+  
+  // Combine API cities with requested static cities as a fallback or addition
+  const apiCities = listData?.data?.[0]?.city || [];
+  const staticCities = [
+    { id: 'riyadh', name: 'Riyadh' },
+    { id: 'jeddah', name: 'Jeddah' },
+    { id: 'medina', name: 'Medina' },
+    { id: 'mecca', name: 'Mecca' }
+  ];
+  
+  // Use API cities if available, otherwise use static cities
+  const cities = apiCities.length > 0 ? apiCities : staticCities;
   
   // State to track if user has experience
   const [hasExperience, setHasExperience] = useState(null);
@@ -87,7 +103,14 @@ const ConfirmProviderStepsMain = ({ onMobileMenuClick }) => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // For phone field, only allow numbers
+    if (name === 'phone') {
+      const numericValue = value.replace(/\D/g, ''); // Remove all non-digits
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
   
   // Validate form data
@@ -505,16 +528,21 @@ const handleNextStep = (e) => {
                 {/* City Input */}
                 
                 <div className="mb-3">
-                  <label className="form-label mb-1">stad (City ID)</label>
-                  <input
-                    type="number"
+                  <label className="form-label mb-1">stad (City)</label>
+                  <select
                     name="city_id"
-                    className="form-control rounded-2 py-2 px-3"
-                    placeholder="Enter city ID (e.g., 1)"
+                    className="form-select rounded-2 py-2 px-3"
                     value={formData.city_id}
                     onChange={handleInputChange}
                     required
-                  />
+                  >
+                    <option value="">Select a city</option>
+                    {cities.map(city => (
+                      <option key={city.id} value={city.id}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Province Input */}

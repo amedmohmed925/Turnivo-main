@@ -79,6 +79,7 @@
   import DashboardMaintenanceOrders from './clients/pages/DashboardMaintenanceOrders'
   import Services from './shared/pages/Services'
   import Contact from './shared/pages/Contact'
+  import HowWeWork from './shared/pages/HowWeWork'
   import LegalPrivacy from './shared/pages/LegalPrivacy'
   import TermsAndConditions from './shared/pages/TermsAndConditions'
 
@@ -89,6 +90,7 @@
     return (
       <Routes>
         {/* shared - Public Routes */}
+        <Route path="/how-we-work" element={<HowWeWork />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/activation-code" element={<PublicRoute><ActivationCode /></PublicRoute>} />
         <Route path="/scan-handler/:propertyId" element={<ScanHandler />} />
