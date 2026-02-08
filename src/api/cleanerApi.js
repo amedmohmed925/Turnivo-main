@@ -45,3 +45,27 @@ export const getTerms = async (id = null) => {
     throw error.response?.data || { message: 'Failed to fetch terms' };
   }
 };
+
+/**
+ * Update cleaner profile
+ * @param {Object} data - Profile update data
+ * @param {string} data.name - First name
+ * @param {string} data.last_name - Last name
+ * @param {string} data.mobile - Mobile phone number
+ * @param {string} data.address - Address
+ * @param {string} data.description - Profile description
+ * @returns {Promise} Response from the server
+ */
+export const updateCleanerProfile = async (data) => {
+  try {
+    const accessToken = localStorage.getItem('access_token');
+    const response = await axiosInstance.post(
+      `/demo/turnivo/api/web/v1/site/profile?access-token=${accessToken}`,
+      data
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    throw error.response?.data || { message: 'Failed to update profile' };
+  }
+};

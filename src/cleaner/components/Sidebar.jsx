@@ -146,7 +146,7 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
     if (!reportDropdownOpen) {
       setActiveItem('report');
       // Navigate to the report main page when opening the dropdown
-      navigate('/cleaner/report-problem');
+
     }
   };
 
@@ -241,9 +241,8 @@ const Sidebar = ({ isMobileOpen = false, onMobileClose = () => {} }) => {
       hasDropdown: true,
       dropdownOpen: reportDropdownOpen,
       onToggle: toggleReportDropdown,
-      route: '/cleaner/report-problem',
+
       subItems: [
-        { id: 'report-problem', label: 'Report a Problem', route: '/cleaner/report-problem' },
         { id: 'my-problems', label: 'My Problems', route: '/cleaner/my-problems' }
       ]
     },

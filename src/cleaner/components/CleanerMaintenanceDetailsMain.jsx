@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import CleanerHeader from './CleanerHeader';
 import {
@@ -13,6 +13,7 @@ import {
 import { selectAccessToken } from '../../store/authSlice';
 
 const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
+  const navigate = useNavigate();
   const [beforeImages, setBeforeImages] = useState([]);
   const [afterImages, setAfterImages] = useState([]);
   const [newBeforeFiles, setNewBeforeFiles] = useState([]);
@@ -243,7 +244,19 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
     const statusName = serviceDetails?.status?.name?.toLowerCase();
     return ['new', 'progress', 'in-progress', 'inprogress', 'complete', 'finished'].includes(statusName);
   };
-
+  // Handle report problem navigation
+  const handleReportProblem = () => {
+    const propertyId = serviceDetails?.property_id?.id;
+    if (propertyId) {
+      navigate(`/cleaner/report-problem?propertyId=${propertyId}`);
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Property information is not available',
+      });
+    }
+  };
   // Open image in lightbox
   const openImageModal = (imageSrc) => {
     setSelectedImage(imageSrc);
@@ -457,7 +470,7 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
             </p>
           </div>
             <div className="bnb-badge d-flex align-items-center gap-2 p-2 rounded-2">
-              <img src="/assets/warning.svg" alt="importance" />
+              <img style={{width:"20px"}} src="/assets/warning.svg" alt="importance" />
               <span>{serviceDetails.maintenance_importance_type_id?.name || 'Normal'}</span>
             </div>
            <h6 className="property-problem-title mb-0 mt-2">
@@ -648,7 +661,7 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                 </div>
               </div>
         <div className="d-flex gap-2 align-items-center justify-content-between flex-wrap my-3">
-                                      <div className="d-flex gap-2">
+                                      <div className="d-flex gap-2 flex-wrap">
                 {shouldShowStatusButton() && (
                 <button 
                   className="sec-btn rounded-2 px-md-4 py-2"
@@ -658,10 +671,16 @@ const CleanerMaintenanceDetailsMain = ({ onMobileMenuClick }) => {
                 </button>
                 )}
                 <button 
-                  className="btn btn-outline-danger py-2"
+                  className="btn btn-outline-danger py-2 px-4 rounded-2"
                   onClick={() => setShowRejectModal(true)}
                 >
                   Reject order
+                </button>
+                <button 
+                  className="btn btn-outline-warning py-2 px-4 rounded-2"
+                  onClick={handleReportProblem}
+                >
+                  Report a Problem
                 </button>
                 </div>
                       <button 

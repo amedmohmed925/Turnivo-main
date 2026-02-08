@@ -4,13 +4,14 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined';
 import PauseCircleFilledOutlinedIcon from '@mui/icons-material/PauseCircleFilledOutlined';
 import StopCircleIcon from '@mui/icons-material/StopCircle';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import CleanerHeader from './CleanerHeader';
 import { getCleanServiceDetails, addCleanServiceBeforeImages, addCleanServiceAfterImages, changeStatusCleanService } from '../../api/cleanerCleaningApi';
 import { getLists } from '../../api/listsApi';
 
 const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [serviceDetails, setServiceDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -482,6 +483,20 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
     return ['new', 'progress', 'in-progress', 'inprogress', 'complete', 'finished'].includes(statusName);
   };
 
+  // Handle report problem navigation
+  const handleReportProblem = () => {
+    const propertyId = serviceDetails?.property_id?.id;
+    if (propertyId) {
+      navigate(`/cleaner/report-problem?propertyId=${propertyId}`);
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Property information is not available',
+      });
+    }
+  };
+
   // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -558,18 +573,26 @@ const CleanerCleaningDetailsMain = ({ onMobileMenuClick }) => {
            <h6 className="property-problem-title mb-0 mt-2">{serviceDetails.clean_service_type_id?.name || 'Cleaning Service'}</h6>
             <div className={`${getStatusBadgeClass(serviceDetails.status)} px-2 p-1 rounded-2`}>{serviceDetails.status?.name || 'New'}</div>
           </div>
-          {shouldShowStatusButton() && (
+          <div className="d-flex gap-2 flex-wrap">
+            {shouldShowStatusButton() && (
+              <button
+                className="sec-btn rounded-2 px-4 py-2 mt-2"
+                disabled={isChangingStatus}
+                onClick={() => {
+                  setStatusComment('');
+                  setShowStatusModal(true);
+                }}
+              >
+                {isChangingStatus ? 'Updating...' : getStatusButtonText()}
+              </button>
+            )}
             <button
-              className="sec-btn rounded-2 px-4 py-2 mt-2"
-              disabled={isChangingStatus}
-              onClick={() => {
-                setStatusComment('');
-                setShowStatusModal(true);
-              }}
+              className="btn btn-outline-danger rounded-2 px-4 py-2 mt-2"
+              onClick={handleReportProblem}
             >
-              {isChangingStatus ? 'Updating...' : getStatusButtonText()}
+              Report a Problem
             </button>
-          )}
+          </div>
           <div className="d-flex align-items-center gap-1">
             <img src="/assets/calendar-3.svg" alt="calendar" />
             <p className="dashboard-home-card-2-desc-3 m-0">{formatDate(serviceDetails.date)}</p>

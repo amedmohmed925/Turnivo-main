@@ -33,6 +33,10 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
   const [startTaskServiceId, setStartTaskServiceId] = useState(null);
   const [startComment, setStartComment] = useState('');
   const [isChangingStatus, setIsChangingStatus] = useState(null);
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [acceptServiceId, setAcceptServiceId] = useState(null);
+  const [acceptComment, setAcceptComment] = useState('');
+  const [isAcceptingWithComment, setIsAcceptingWithComment] = useState(false);
   
   const accessToken = useSelector(selectAccessToken);
 
@@ -158,10 +162,24 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
     setRejectComment('');
   };
 
-  const handleAcceptOrder = async (e, serviceId) => {
+  const handleAcceptOrder = (e, serviceId) => {
     e.preventDefault();
     e.stopPropagation();
-    
+    setAcceptServiceId(serviceId);
+    setAcceptComment('');
+    setShowAcceptModal(true);
+  };
+
+  const handleAcceptSubmit = async () => {
+    if (!acceptComment.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Comment Required',
+        text: 'Please enter a comment',
+      });
+      return;
+    }
+
     if (!accessToken) {
       Swal.fire({
         icon: 'error',
@@ -172,9 +190,10 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
     }
 
     try {
-      setIsAccepting(serviceId);
-      const response = await acceptMaintenanceService(accessToken, {
-        service_id: serviceId,
+      setIsAcceptingWithComment(true);
+      const response = await changeStatusMaintenanceService(accessToken, {
+        service_id: acceptServiceId,
+        comment: acceptComment.trim(),
       });
 
       if (response.status === 1) {
@@ -183,7 +202,15 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
           title: 'Accepted',
           text: response.message || 'Order accepted successfully.',
         });
+        setShowAcceptModal(false);
+        setAcceptServiceId(null);
+        setAcceptComment('');
         // Refresh data - move to in-progress
+        const newResponse = await getProgressMaintenanceServices(accessToken);
+        if (newResponse.status === 1 && newResponse.data?.length > 0) {
+          const items = newResponse.data[0]?.items || [];
+          setMaintenanceData(items);
+        }
         setSelectedOrderFilter('in-progress');
       } else {
         Swal.fire({
@@ -199,7 +226,7 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
         text: error.message || 'Failed to accept order.',
       });
     } finally {
-      setIsAccepting(null);
+      setIsAcceptingWithComment(false);
     }
   };
 
@@ -358,9 +385,8 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
                 className="rounded-2 px-3 py-2 border-0 text-white"
                 style={{ backgroundColor: '#F59331' }}
                 onClick={(e) => handleAcceptOrder(e, itemId)}
-                disabled={isAccepting === itemId}
               >
-                {isAccepting === itemId ? 'Accepting...' : 'Accepte order'}
+                Accept order
               </button>
               <button 
                 className="btn btn-outline-danger rounded-2 py-2 px-3"
@@ -597,6 +623,57 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
         </div>
       </div>
 
+      {/* Accept Order Modal */}
+      {showAcceptModal && (
+        <div 
+          className="modal show d-block" 
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={() => setShowAcceptModal(false)}
+        >
+          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content rounded-4">
+              <div className="modal-header border-0">
+                <h5 className="m-0 dashboard-home-card-2-title-1">Accept Order</h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setShowAcceptModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div>
+                  <label className="dashboard-home-card-2-title-1 fw-bold">Comment</label>
+                  <textarea
+                    className="form-control rounded-2 py-2"
+                    placeholder="Enter your comment"
+                    rows="4"
+                    value={acceptComment}
+                    onChange={(e) => setAcceptComment(e.target.value)}
+                  ></textarea>
+                </div>
+              </div>
+              <div className="modal-footer border-0">
+                <button
+                  type="button"
+                  className="btn btn-secondary rounded-2 px-4 py-2"
+                  onClick={() => setShowAcceptModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="sec-btn rounded-2 px-4 py-2"
+                  disabled={isAcceptingWithComment}
+                  onClick={handleAcceptSubmit}
+                >
+                  {isAcceptingWithComment ? 'Accepting...' : 'Accept'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Start Task / Change Status Modal */}
       {showStartModal && (
         <div 
@@ -607,7 +684,7 @@ const CleanerMaintenanceRequestMain = ({ onMobileMenuClick }) => {
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content rounded-4">
               <div className="modal-header border-0">
-                <h5 className="m-0 dashboard-home-card-2-title-1">Update Status</h5>
+                <h5 className="m-0 dashboard-home-card-2-title-1">Complete Order</h5>
                 <button 
                   type="button" 
                   className="btn-close" 

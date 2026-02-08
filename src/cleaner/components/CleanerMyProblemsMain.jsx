@@ -100,22 +100,17 @@ const CleanerMyProblemsMain = ({ onMobileMenuClick }) => {
     <section>
       <CleanerHeader title="My Problems" onMobileMenuClick={onMobileMenuClick} />
       <div className="dashboard-home-content px-3 mt-2">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
           <h6 className="dashboard-routes-sub m-0">My Reported Problems</h6>
-          <div className="d-flex align-items-center gap-2 flex-wrap">
-            <div className="search-container">
-              <SearchOutlinedIcon className="search-icon" />
-              <input 
-                type="text" 
-                className="search-input" 
-                placeholder="Search problems..." 
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
-            </div>
-            <Link to="/cleaner/report-problem" className="main-btn rounded-2 px-3 py-2 text-decoration-none">
-              + Report New Problem
-            </Link>
+          <div className="search-input-wrapper">
+            <SearchOutlinedIcon className="search-icon" />
+            <input 
+              type="text" 
+              className="search-gray-input form-control"
+              placeholder="Search problems..." 
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
           </div>
         </div>
 
@@ -163,7 +158,7 @@ const CleanerMyProblemsMain = ({ onMobileMenuClick }) => {
                             </p>
                           </div>
                           <div className="problem-type-badge d-flex align-items-center gap-2 p-2 rounded-2">
-                            <img src="/assets/warning.svg" alt="type" />
+                            <img style={{width:"20px"}} src="/assets/warning.svg" alt="type" />
                             <span>{getProblemType(item.type)}</span>
                           </div>
                           <p className="dashboard-home-card-2-desc-3 m-0 text-truncate" style={{ maxWidth: '250px' }}>

@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import CleanerHeader from './CleanerHeader';
+import { createReportProblem } from '../../api/reportProblemApi';
 
 const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
+  const [searchParams] = useSearchParams();
+  const propertyId = searchParams.get('propertyId');
+  
   // State to track which problem type is selected
   const [selectedProblemType, setSelectedProblemType] = useState('home-service');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for form inputs
   const [formData, setFormData] = useState({
@@ -15,6 +21,42 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
     deviceType: '',
     problemDescription: ''
   });
+
+  // Load user email and name on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        const userEmail = parsedData.email || sessionStorage.getItem('user_email');
+        const userName = parsedData.name || parsedData.username || '';
+        if (userEmail) {
+          setFormData(prev => ({
+            ...prev,
+            email: userEmail,
+            serviceProviderName: userName
+          }));
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        const sessionEmail = sessionStorage.getItem('user_email');
+        if (sessionEmail) {
+          setFormData(prev => ({
+            ...prev,
+            email: sessionEmail
+          }));
+        }
+      }
+    } else {
+      const sessionEmail = sessionStorage.getItem('user_email');
+      if (sessionEmail) {
+        setFormData(prev => ({
+          ...prev,
+          email: sessionEmail
+        }));
+      }
+    }
+  }, []);
 
 
 
@@ -33,10 +75,125 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add your form submission logic here
+    const accessToken = localStorage.getItem('access_token');
+
+    if (!accessToken) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Authentication Required',
+        text: 'Please login to continue',
+      });
+      return;
+    }
+
+    // Base validation
+    const baseValidation = formData.email.trim() && formData.problemDescription.trim();
+
+    if (!baseValidation) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Missing information',
+        text: 'Email and description are required.',
+      });
+      return;
+    }
+
+    // Specific validations based on problem type
+    if (selectedProblemType === 'home-service' && !formData.bookingDate) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Booking date required',
+        text: 'Please select the booking date.',
+      });
+      return;
+    }
+
+    if (!formData.typeOfIssue) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Issue type required',
+        text: 'Please select the issue type.',
+      });
+      return;
+    }
+
+    if (selectedProblemType === 'technical-issue' && !formData.deviceType.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Device type required',
+        text: 'Please specify the device type.',
+      });
+      return;
+    }
+
+    const payload = {
+      type: selectedProblemType === 'home-service' ? 1 : 2,
+      email: formData.email.trim(),
+      description: formData.problemDescription.trim(),
+    };
+
+    // Add property ID if available
+    if (propertyId) {
+      payload.property_id = Number(propertyId);
+    }
+
+    // Add conditional fields
+    if (selectedProblemType === 'home-service') {
+      payload.date = formData.bookingDate;
+      if (formData.serviceProviderName.trim()) {
+        payload.provider_name = formData.serviceProviderName.trim();
+      }
+      if (formData.typeOfIssue) {
+        payload.type_issue = Number(formData.typeOfIssue);
+      }
+    } else {
+      if (formData.typeOfIssue) {
+        payload.type_issue = Number(formData.typeOfIssue);
+      }
+      if (formData.deviceType.trim()) {
+        payload.device_type = formData.deviceType.trim();
+      }
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await createReportProblem(accessToken, payload);
+
+      if (response.status === 1) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Submitted',
+          text: response.message || 'Your problem report has been submitted successfully.',
+        });
+
+        // Reset form
+        setFormData({
+          email: '',
+          bookingDate: '',
+          serviceProviderName: '',
+          typeOfIssue: '',
+          deviceType: '',
+          problemDescription: '',
+        });
+        setSelectedProblemType('home-service');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Submission failed',
+          text: response.message || 'Unable to submit the problem report.',
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to submit the problem report.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -91,6 +248,7 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
                   placeholder="E-mail address*"
                   value={formData.email}
                   onChange={handleInputChange}
+                  readOnly
                   required
                 />
               </div>
@@ -120,24 +278,27 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
                       className="form-control rounded-2 py-2 px-3 w-100"
                       id="serviceProviderName"
                       name="serviceProviderName"
-                      placeholder="Service Provider Name (optional)"
+                      placeholder="Service Provider Name"
                       value={formData.serviceProviderName}
                       onChange={handleInputChange}
+                      readOnly
                     />
                   </div>
                 </div>
                 <div className="col-md-4">
                   <div className="mb-3 w-100">
-                    <input
-                      type="text"
+                    <select
                       className="form-control rounded-2 py-2 px-3 w-100"
                       id="typeOfIssue"
                       name="typeOfIssue"
-                      placeholder="Type of Issue"
                       value={formData.typeOfIssue}
                       onChange={handleInputChange}
                       required
-                    />
+                    >
+                      <option value="">Select Issue Type*</option>
+                      <option value="1">Cleaning</option>
+                      <option value="2">Maintenance</option>
+                    </select>
                   </div>
                 </div>
               </>
@@ -145,16 +306,18 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
               <>
                 <div className="col-md-6">
                   <div className="mb-3 w-100">
-                    <input
-                      type="text"
+                    <select
                       className="form-control rounded-2 py-2 px-3 w-100"
                       id="typeOfIssue"
                       name="typeOfIssue"
-                      placeholder="Type of Issue"
                       value={formData.typeOfIssue}
                       onChange={handleInputChange}
                       required
-                    />
+                    >
+                      <option value="">Select Issue Type*</option>
+                      <option value="1">Cleaning</option>
+                      <option value="2">Maintenance</option>
+                    </select>
                   </div>
                 </div>
                 <div className="col-md-6">
@@ -191,8 +354,12 @@ const CleanerReportProblemMain = ({ onMobileMenuClick }) => {
             </div>
             
             <div className="col-12">
-              <button type="submit" className="sec-btn rounded-2 px-5 py-2 w-100">
-                Send
+              <button 
+                type="submit" 
+                className="sec-btn rounded-2 px-5 py-2 w-100"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Sending...' : 'Send'}
               </button>
             </div>
           </div>
